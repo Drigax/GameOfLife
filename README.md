@@ -12,5 +12,6 @@ Build instructions:
 
 If on Windows, `Project.sln` will be generated in the build folder. build the solution and execute gameOfLife.exe with an input [ASCII Life v1.06 file](https://www.conwaylife.com/wiki/Life_1.06).
 
-Runtime Arguments:
-Usage: `gameOfLife <path to Life v1.06 file> [number of iterations (default: 10)]`
+Runtime Usage:
+
+`gameOfLife <path to Life v1.06 file> [number of iterations (default: 10)]`
