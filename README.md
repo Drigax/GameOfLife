@@ -3,8 +3,11 @@ This is a C++ implementation of [Conway's game of life](https://en.wikipedia.org
 This solution assumes a 64 bit signed integer space for the maximum game board size:[-2^63, 2^63-1], and implements this solution using hashtables and hashsets.
 
 Build instructions:
+
 `mkdir build`
+
 `cd build`
+
 `cmake ..`
 
 If on Windows, `Project.sln` will be generated in the build folder. build the solution and execute gameOfLife.exe with an input [ASCII Life v1.06 file](https://www.conwaylife.com/wiki/Life_1.06).
