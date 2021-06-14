@@ -41,19 +41,19 @@ void gameOfLifeStep(board* cells) {
                     for (int j = -1; j <= 1; ++j) {
                         // check for overflow, and avoid processing cells outside of the cellular bounds.
                         if (i > 0 && currentXCoordinate + i < currentXCoordinate) {
-                            cout << "Skipping processing cell right of " << currentXCoordinate << "..." << endl;
+                            //cout << "Skipping processing cell right of " << currentXCoordinate << "..." << endl;
                             continue;
                         }
                         else if (i < 0 && currentXCoordinate + i > currentXCoordinate) {
-                            cout << "Skipping processing cell left of " << currentXCoordinate << "..." << endl;
+                            //cout << "Skipping processing cell left of " << currentXCoordinate << "..." << endl;
                             continue;
                         }
                         if (j > 0 && currentYCoordinate + j < currentYCoordinate) {
-                            cout << "Skipping processing cell below of " << currentYCoordinate << "..." << endl;
+                            //cout << "Skipping processing cell below of " << currentYCoordinate << "..." << endl;
                             continue;
                         }
                         else if (j < 0 && currentYCoordinate + j > currentYCoordinate) {
-                            cout << "Skipping processing cell above of " << currentYCoordinate << "..." << endl;
+                            //cout << "Skipping processing cell above of " << currentYCoordinate << "..." << endl;
                             continue;
                         }
 
@@ -62,7 +62,7 @@ void gameOfLifeStep(board* cells) {
                         }
 
                         cellsToUpdate[currentXCoordinate + i].insert(currentYCoordinate + j);
-                        cout << "Adding ( " << currentXCoordinate + i << " , " << currentYCoordinate + j << " ) to cells to process this tick" << endl;
+                        //cout << "Adding ( " << currentXCoordinate + i << " , " << currentYCoordinate + j << " ) to cells to process this tick" << endl;
                     }
                 }
             }
@@ -97,19 +97,19 @@ void gameOfLifeStep(board* cells) {
 
                     // check for overflow, and avoid processing cells outside of the cellular bounds.
                     if (i > 0 && currentXCoordinate + i < currentXCoordinate) {
-                        cout << "Skipping processing cell right of " << currentXCoordinate << "..." << endl;
+                        //cout << "Skipping processing cell right of " << currentXCoordinate << "..." << endl;
                         continue;
                     }
                     else if (i < 0 && currentXCoordinate + i > currentXCoordinate) {
-                        cout << "Skipping processing cell left of " << currentXCoordinate << "..." << endl;
+                        //cout << "Skipping processing cell left of " << currentXCoordinate << "..." << endl;
                         continue;
                     }
                     if (j > 0 && currentYCoordinate + j < currentYCoordinate) {
-                        cout << "Skipping processing cell below of " << currentYCoordinate << "..." << endl;
+                        //cout << "Skipping processing cell below of " << currentYCoordinate << "..." << endl;
                         continue;
                     }
                     else if (j < 0 && currentYCoordinate + j > currentYCoordinate) {
-                        cout << "Skipping processing cell above of " << currentYCoordinate << "..." << endl;
+                        //cout << "Skipping processing cell above of " << currentYCoordinate << "..." << endl;
                         continue;
                     }
 
@@ -123,7 +123,7 @@ void gameOfLifeStep(board* cells) {
 
                     if (currentNeighboringCellState == CellState::Alive || currentNeighboringCellState == CellState::BecomingDead) {
                         neighboringAliveCells++;
-                        cout << "( " << currentXCoordinate << " , " << currentYCoordinate<< " ) has alive neighbor ( " << currentXCoordinate + i << " , " << currentYCoordinate + j  << ") " << endl;
+                        //cout << "( " << currentXCoordinate << " , " << currentYCoordinate<< " ) has alive neighbor ( " << currentXCoordinate + i << " , " << currentYCoordinate + j  << ") " << endl;
                     }
                 }
             }
@@ -131,13 +131,13 @@ void gameOfLifeStep(board* cells) {
             // if the current cell is alive, then an alive neighbor count of 2 or 3 will sustain it, else it dies.
             if (currentCellState == CellState::Alive) {
                 (*cells)[currentXCoordinate][currentYCoordinate] = neighboringAliveCells >= 2 && neighboringAliveCells <= 3 ? CellState::Alive : CellState::BecomingDead;
-                cout << "Alive cell ( " << currentXCoordinate << " , " << currentYCoordinate << " ) has " << neighboringAliveCells << " neighbors." << endl;
+                //cout << "Alive cell ( " << currentXCoordinate << " , " << currentYCoordinate << " ) has " << neighboringAliveCells << " neighbors." << endl;
             }
             // if the current cell is dead, then an alive neighbor count of 3 will become alive, else it remains dead.
             if (currentCellState == CellState::Dead) {
                 CellState state = neighboringAliveCells == 3 ? CellState::BecomingAlive : CellState::Dead;
                 (*cells)[currentXCoordinate][currentYCoordinate] = state;
-                cout << "Dead cell ( " << currentXCoordinate << " , " << currentYCoordinate << " ) has " << neighboringAliveCells << " neighbors. Setting to " << ((state == CellState::BecomingAlive) ? "Alive" : "Dead") << endl;
+                //cout << "Dead cell ( " << currentXCoordinate << " , " << currentYCoordinate << " ) has " << neighboringAliveCells << " neighbors. Setting to " << ((state == CellState::BecomingAlive) ? "Alive" : "Dead") << endl;
                 
                 // if this cell stayed dead between frames, remove it from our board to minimize bloat.
                 if (state == CellState::Dead) {
@@ -145,7 +145,7 @@ void gameOfLifeStep(board* cells) {
                         cellsToRemove.insert(pair<long long, unordered_set<long long>>(currentXCoordinate, unordered_set<long long>()));
                     }
                     cellsToRemove[currentXCoordinate].insert(currentYCoordinate);
-                    cout << "Clearing (" << currentXCoordinate << " , " << currentYCoordinate << " ) to be removed from board.";
+                    //cout << "Clearing (" << currentXCoordinate << " , " << currentYCoordinate << " ) to be removed from board.";
                 }
             }
         }
@@ -161,11 +161,11 @@ void gameOfLifeStep(board* cells) {
                 auto& currentColumn = (*cells)[currentXCoordinate];
                 if (currentColumn.find(currentYCoordinate) != currentColumn.end()) {
                     currentColumn.erase(currentYCoordinate);
-                    cout << "Clearing (" << currentXCoordinate << " , " << currentYCoordinate << " ) from board.";
+                    //cout << "Clearing (" << currentXCoordinate << " , " << currentYCoordinate << " ) from board.";
                 }
                 if (currentColumn.empty()) {
                     cells->erase(currentXCoordinate);
-                    cout << "Clearing (" << currentXCoordinate << " , " << " ) from board.";
+                    //cout << "Clearing (" << currentXCoordinate << " , " << " ) from board.";
                 }
             }
         }
