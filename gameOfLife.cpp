@@ -34,8 +34,8 @@ void gameOfLifeStep(board* cells) {
         for (auto itYCells = itXCells->second.begin(); itYCells != itXCells->second.end(); ++itYCells) {
             long long currentYCoordinate = itYCells->first;
 
-            // If the cell value is even, then we are dead this tick
-            if (itYCells->second % 2 == 0) {;
+            // If the cell value is odd, then we are alive this tick
+            if (itYCells->second % 2 == 1) {;
                 itYCells->second = CellState::Alive;
                 for (int i = -1; i <= 1; ++i) {
                     for (int j = -1; j <= 1; ++j) {
@@ -48,11 +48,11 @@ void gameOfLifeStep(board* cells) {
                             cout << "Skipping processing cell left of " << currentXCoordinate << "..." << endl;
                             continue;
                         }
-                        if (j > 0 && currentYCoordinate + i < currentYCoordinate) {
+                        if (j > 0 && currentYCoordinate + j < currentYCoordinate) {
                             cout << "Skipping processing cell below of " << currentYCoordinate << "..." << endl;
                             continue;
                         }
-                        else if (j < 0 && currentYCoordinate + i > currentYCoordinate) {
+                        else if (j < 0 && currentYCoordinate + j > currentYCoordinate) {
                             cout << "Skipping processing cell above of " << currentYCoordinate << "..." << endl;
                             continue;
                         }
@@ -73,11 +73,103 @@ void gameOfLifeStep(board* cells) {
     }
 
     // Step 2: iterate through cells to update, and set any becoming states
-    for (auto itUpdateCells = cellsToUpdate.begin(); itUpdateCells != cellsToUpdate.end(); ++itUpdateCells) {
+    for (auto itUpdateCellsX = cellsToUpdate.begin(); itUpdateCellsX != cellsToUpdate.end(); ++itUpdateCellsX) {
+        long long currentXCoordinate = itUpdateCellsX->first;
+        for (auto itUpdateCellsY = itUpdateCellsX->second.begin(); itUpdateCellsY != itUpdateCellsX->second.end(); ++itUpdateCellsY) {
+            long long currentYCoordinate = *itUpdateCellsY;
 
+            // Retrieve the cell state from our datastructure.
+            CellState currentCellState = CellState::Dead;
+            if (cells->find(currentXCoordinate) != cells->end()) {
+                if ((*cells)[currentXCoordinate].find(currentYCoordinate) != (*cells)[currentXCoordinate].end()) {
+                    currentCellState = (*cells)[currentXCoordinate][currentYCoordinate];
+                }
+            }
+
+            int neighboringAliveCells = 0;
+            
+            // given the cell state, update the board using its neighboring cell's states
+            for (int i = -1; i <= 1; ++i) {
+                for (int j = -1; j <= 1; ++j) {
+                    if (i == 0 && j == 0) {
+                        continue;
+                    }   
+
+                    // check for overflow, and avoid processing cells outside of the cellular bounds.
+                    if (i > 0 && currentXCoordinate + i < currentXCoordinate) {
+                        cout << "Skipping processing cell right of " << currentXCoordinate << "..." << endl;
+                        continue;
+                    }
+                    else if (i < 0 && currentXCoordinate + i > currentXCoordinate) {
+                        cout << "Skipping processing cell left of " << currentXCoordinate << "..." << endl;
+                        continue;
+                    }
+                    if (j > 0 && currentYCoordinate + j < currentYCoordinate) {
+                        cout << "Skipping processing cell below of " << currentYCoordinate << "..." << endl;
+                        continue;
+                    }
+                    else if (j < 0 && currentYCoordinate + j > currentYCoordinate) {
+                        cout << "Skipping processing cell above of " << currentYCoordinate << "..." << endl;
+                        continue;
+                    }
+
+                    // Retrieve the cell state from our datastructure.
+                    CellState currentNeighboringCellState = CellState::Dead;
+                    if (cells->find(currentXCoordinate + i) != cells->end()) {
+                        if ((*cells)[currentXCoordinate + i].find(currentYCoordinate + j) != (*cells)[currentXCoordinate + i].end()) {
+                            currentNeighboringCellState = (*cells)[currentXCoordinate + i][currentYCoordinate + j];
+                        }
+                    }
+
+                    if (currentNeighboringCellState == CellState::Alive || currentNeighboringCellState == CellState::BecomingDead) {
+                        neighboringAliveCells++;
+                        cout << "( " << currentXCoordinate << " , " << currentYCoordinate<< " ) has alive neighbor ( " << currentXCoordinate + i << " , " << currentYCoordinate + j  << ") " << endl;
+                    }
+                }
+            }
+
+            // if the current cell is alive, then an alive neighbor count of 2 or 3 will sustain it, else it dies.
+            if (currentCellState == CellState::Alive) {
+                (*cells)[currentXCoordinate][currentYCoordinate] = neighboringAliveCells >= 2 && neighboringAliveCells <= 3 ? CellState::Alive : CellState::BecomingDead;
+                cout << "Alive cell ( " << currentXCoordinate << " , " << currentYCoordinate << " ) has " << neighboringAliveCells << " neighbors." << endl;
+            }
+            // if the current cell is dead, then an alive neighbor count of 3 will become alive, else it remains dead.
+            if (currentCellState == CellState::Dead) {
+                CellState state = neighboringAliveCells == 3 ? CellState::BecomingAlive : CellState::Dead;
+                (*cells)[currentXCoordinate][currentYCoordinate] = state;
+                cout << "Dead cell ( " << currentXCoordinate << " , " << currentYCoordinate << " ) has " << neighboringAliveCells << " neighbors. Setting to " << ((state == CellState::BecomingAlive) ? "Alive" : "Dead") << endl;
+                
+                // if this cell stayed dead between frames, remove it from our board to minimize bloat.
+                if (state == CellState::Dead) {
+                    if (cellsToRemove.find(currentXCoordinate) != cellsToRemove.end()) {
+                        cellsToRemove.insert(pair<long long, unordered_set<long long>>(currentXCoordinate, unordered_set<long long>()));
+                    }
+                    cellsToRemove[currentXCoordinate].insert(currentYCoordinate);
+                    cout << "Clearing (" << currentXCoordinate << " , " << currentYCoordinate << " ) to be removed from board.";
+                }
+            }
+        }
     }
 
     // Step 3: prune any irrelevant cells
+    for (auto itXCells = cellsToRemove.begin(); itXCells != cellsToRemove.end(); ++itXCells) {
+        long long currentXCoordinate = itXCells->first;
+        for (auto itYCells = itXCells->second.begin(); itYCells != itXCells->second.end(); ++itYCells) {
+            long long currentYCoordinate = *itYCells;
+
+            if (cells->find(currentXCoordinate) != cells->end()) {
+                auto& currentColumn = (*cells)[currentXCoordinate];
+                if (currentColumn.find(currentYCoordinate) != currentColumn.end()) {
+                    currentColumn.erase(currentYCoordinate);
+                    cout << "Clearing (" << currentXCoordinate << " , " << currentYCoordinate << " ) from board.";
+                }
+                if (currentColumn.empty()) {
+                    cells->erase(currentXCoordinate);
+                    cout << "Clearing (" << currentXCoordinate << " , " << " ) from board.";
+                }
+            }
+        }
+    }
 
 }
 
@@ -87,7 +179,7 @@ void printOutputBoard(board* cells) {
         for (auto itYCells = itXCells->second.begin(); itYCells != itXCells->second.end(); ++itYCells) {
             // if the cell is alive this tick, print its coordinates.
             if (itYCells->second % 2 == 1) {
-                cout << itXCells->first << itYCells->first << endl;
+                cout << itXCells->first << " " << itYCells->first << endl;
             }
         }
     }
@@ -118,7 +210,7 @@ void main (int argc, char** argv){
     // Using hash map allows us to retain the constant-time access to individual cells, similar to our nested arrays, while giving us a better worst-case size-complexity pf 2*N, where N is the number of alive cells in our simulation.
     // Also, in order to minimize memory usage due to our large simulation size, we will be doing each simulation step in-place.
     
-    // In this implementation We use a pair of X,Y coordinates as our key, with an integer enum representing the state.
+    // In this implementation We use nested hash maps, with X and Y coordinates as the respective keys, with an integer enum representing the state.
     board cells{};
 
     // Read from the input file to setup our initial board state.
@@ -140,6 +232,10 @@ void main (int argc, char** argv){
                 istringstream iss(line);
                 iss >> x >> y;
                 cout << "X: " << x << " Y: " << y << endl;
+                if (cells.find(x) == cells.end()) {
+                    cells.insert(pair<long long, unordered_map<long long, CellState>>(x, unordered_map<long long, CellState>()));
+                }
+                cells[x][y] = CellState::Alive;
                 numInitialAliveCells++;
             }
             catch (exception e) {
